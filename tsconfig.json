@@ -21,7 +21,7 @@
     "noFallthroughCasesInSwitch": true,
     "types": [
       "vite/client",    // For Vite-specific environment variables and types
-      "@tauri-apps/api/types", // Or just "@tauri-apps/api" if that works better for v2
+      "@tauri-apps/api", // Or just "@tauri-apps/api" if that works better for v2
       "node"             // Add this line
     ],// Explicitly include Tauri API types & Vite client types
     /* Path mapping */
