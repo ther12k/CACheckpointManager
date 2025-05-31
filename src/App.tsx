@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 // For Tauri v2, core contains invoke. If you are on v1, it's from /tauri
 import { invoke } from "@tauri-apps/api/core"; // Verify this path for your Tauri version
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-// import './App.css'; // Your global CSS
 
 // Shadcn/UI components
 import { Button } from "@/components/ui/button";
@@ -11,9 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 
 // --- Icon Components ---
-const RFIDIcon = () => <img src="/assets/rfid-icon-white.svg" alt="RFID" className="w-12 h-12 md:w-16 md:h-16 mb-4" />;
-const QRIcon = () => <img src="/assets/qr-icon-white.svg" alt="QR" className="w-16 h-16 md:w-20 md:h-20 mb-3" />;
-const CheckmarkIcon = () => <img src="/assets/checkmark-white.svg" alt="Success" className="w-6 h-6 md:w-8 md:h-8 text-white" />;
+const RFIDIcon = () => <img src="@/assets/rfid-icon-white.svg" alt="RFID" className="w-12 h-12 md:w-16 md:h-16 mb-4" />;
+const QRIcon = () => <img src="@/assets/qr-icon-white.svg" alt="QR" className="w-16 h-16 md:w-20 md:h-20 mb-3" />;
+const CheckmarkIcon = () => <img src="@/assets/checkmark-white.svg" alt="Success" className="w-6 h-6 md:w-8 md:h-8 text-white" />;
 
 // --- Types and States ---
 const APP_STATE = {
@@ -125,37 +124,40 @@ function App() {
     async function setup() {
       try {
         const settings: AppSettings = await invoke('get_app_settings');
-        setGateName(settings.gate_name || "Unknown Gate");
+        setGateName(settings.gate_name || "Unknown Gate"); // << If this fails, gateName remains "Loading..." or becomes "Gate Error"
         setPaymentAmount(settings.emoney_deduct_price || 17000);
         console.log("App settings loaded:", settings);
         
         updateStatus("Initializing RFID Reader...");
         await invoke('initialize_rfid_reader_command');
         await invoke('start_rfid_detection_command');
-        updateStatus("Scanning for RFID tag...");
+        // Only update status if still in an initial state, to prevent overriding later messages
+        if (currentScreen === APP_STATE.DETECTING_RFID || currentScreen === APP_STATE.VALIDATING_RFID) {
+          updateStatus("Scanning for RFID tag...");
+        }
 
-        unlistenRfid = listen<EventPayload>('rfid_card_tapped', (event) => {
+        unlistenRfid = listen<EventPayload>('rfid_card_tapped', (event) => { // Make sure EventPayload matches Rust
           console.log("Frontend received rfid_card_tapped:", event.payload.message);
-          handleRfidTap(event.payload.message);
+          handleRfidTap(event.payload.message); // Pass the actual message string
         });
 
       } catch (e: any) {
         console.error("Failed to load app settings or init RFID:", e);
-        setGateName("Gate Error");
+        setGateName("Gate Error"); // << THIS IS LIKELY WHERE "Gate Error" COMES FROM
         updateStatus(`Error initializing: ${e.toString()}`, true);
-        setCurrentScreen(APP_STATE.ERROR);
+        setCurrentScreen(APP_STATE.ERROR); // Good to show an error screen
       }
     }
     
     setup();
     
-    return () => {
+    return () => { // Cleanup function
       if (unlistenRfid) {
-        unlistenRfid.then(f => f()).catch(console.error);
+        unlistenRfid.then(f => f()).catch(console.error); // Ensure unlistenRfid is not null before calling .then
       }
       clearAllTimers();
     };
-  }, []);
+  }, []); // Empty dependency array is correct for running once on mount
 
   const handleRfidTap = async (cardRawData: string) => {
     if (currentScreen === APP_STATE.DETECTING_RFID) {
