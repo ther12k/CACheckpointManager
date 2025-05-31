@@ -5,6 +5,12 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "opener:default"
+    "dialog:default",
+    "fs:default", 
+    "shell:default",
+    "http:default",
+    "notification:default",
+    "os:default",
+    "process:default"
   ]
 }

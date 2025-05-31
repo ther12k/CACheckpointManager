@@ -1,25 +1,93 @@
 [package]
 name = "cacheckpointmanager"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "A Tauri App for Checkpoint Management"
+authors = ["Your Name <your.email@example.com>"]
 edition = "2021"
+rust-version = "1.75"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[lib]
-# The `_lib` suffix may seem redundant but it is necessary
-# to make the lib name unique and wouldn't conflict with the bin name.
-# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "cacheckpointmanager_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+# Remove [lib] section unless you're building a library component
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.0", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-opener = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# Core Tauri
+tauri = { version = "2.0", features = ["custom-protocol"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
+# Tauri 2.0 Plugins
+tauri-plugin-dialog = "2.0"
+tauri-plugin-fs = "2.0"
+tauri-plugin-http = "2.0"
+tauri-plugin-notification = "2.0"
+tauri-plugin-os = "2.0"
+tauri-plugin-process = "2.0"
+tauri-plugin-shell = "2.0"
+
+# Async Runtime
+tokio = { version = "1.40", features = ["macros", "rt-multi-thread", "time"] }
+
+# Communication Protocols
+serialport = "4.4"                    # Requires: sudo apt install libudev-dev pkg-config
+tokio-modbus = "0.16.1"                 # Updated to latest version
+reqwest = { version = "0.12", features = ["json", "rustls-tls-native-roots"] }
+
+# PDF Generation (choose one based on needs)
+printpdf = "0.7"                      # For complex layouts
+# genpdf = "0.7"                      # Alternative: simpler PDF generation
+# wkhtmltopdf = "0.5"                 # Alternative: HTML to PDF
+
+# QR Code Generation
+qrcode = "0.14"
+image = "0.25"
+
+# Security & Encryption
+aes-gcm = "0.10"                      # AES-GCM encryption
+sha2 = "0.10"                         # Hashing
+argon2 = "0.5"                        # Password hashing
+
+# Logging (choose one approach)
+# Option 1: Traditional logging
+log = "0.4"
+env_logger = "0.11"
+# Option 2: Modern structured logging (recommended for async)
+# tracing = "0.1"
+# tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error Handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Utilities
+base64 = "0.22"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.10", features = ["v4", "serde"] }
+regex = "1.10"
+url = "2.5"
+
+# Database (choose based on complexity)
+# Option 1: Full-featured async database
+# sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
+# Option 2: Simple embedded database
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# Configuration Management
+config = "0.14"
+toml = "0.8"
+
+[features]
+default = ["development"]
+
+# Development build with devtools
+development = ["custom-protocol", "tauri/devtools"]
+
+# Production build without devtools
+production = ["custom-protocol"]
+
+# Custom protocol for app distribution
+custom-protocol = ["tauri/custom-protocol"]
+
+# Optional features (uncomment the dependency above first)
+# deep-link = ["tauri-plugin-deep-link"]
